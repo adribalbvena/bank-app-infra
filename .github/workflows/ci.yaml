@@ -1,0 +1,75 @@
+name: CI - Build & Scan
+
+on:
+  push:
+    branches: ["main"]
+    # Monorepo Optimization: Only trigger if changes happen in 'app/'
+    paths:
+      - "app/**"
+      - ".github/workflows/**"
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # Required to push to GHCR
+      id-token: write # Required for cosign to sign with OIDC
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.5.0
+        with:
+          cosign-release: "v2.2.4"
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker Image (Local)
+        # We build and load it to the local Docker daemon to scan it BEFORE pushing
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app
+          push: false # Important: Do not push yet!
+          load: true # Load into local Docker daemon
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Scan Docker Image with Trivy
+        uses: aquasecurity/trivy-action@v0.20.0
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          severity: CRITICAL
+          exit-code: 1
+          format: table
+
+      - name: Push Docker Image
+        # Only push if the previous scan step passed
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Sign image with a key
+        # We use the private key stored in GitHub Secrets to sign the image.
+        # This ensures authenticity: only this pipeline could have created this image.
+        run: |
+          cosign sign --yes --key env://COSIGN_PRIVATE_KEY \
+            "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+        env:
+          # The private key generated locally and stored in Secrets
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          # The password used to encrypt the private key
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
