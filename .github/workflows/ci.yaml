@@ -47,7 +47,7 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       - name: Scan Docker Image with Trivy
-        uses: aquasecurity/trivy-action@v0.20.0
+        uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           severity: CRITICAL
