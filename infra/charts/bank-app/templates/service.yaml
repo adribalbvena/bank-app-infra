@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-service
+  name: {{ include "bank-app.fullname" . }}
   labels:
-    app: bank-app
+    {{- include "bank-app.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -12,4 +12,4 @@ spec:
       protocol: TCP
       name: http
   selector:
-    app: bank-app
+    {{- include "bank-app.selectorLabels" . | nindent 4 }}

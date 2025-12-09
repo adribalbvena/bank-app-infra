@@ -4,7 +4,10 @@ image:
   repository: ghcr.io/adribalbvena/bank-app-infra
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
+  tag: "0262e3e25fe69b9d41feeb7f29944e2969b858be"
+
+imagePullSecrets:
+  - name: ghcr-secret
 
 service:
   type: ClusterIP

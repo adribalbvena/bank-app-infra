@@ -1,22 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  # Usamos un nombre fijo basado en el Release para evitar errores de template
-  name: {{ .Release.Name }}-server
+  name: {{ include "bank-app.fullname" . }}
   labels:
-    app: bank-app
+    {{- include "bank-app.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: bank-app
+      {{- include "bank-app.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app: bank-app
+        {{- include "bank-app.selectorLabels" . | nindent 8 }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
-        - name: bank-app
+        - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
