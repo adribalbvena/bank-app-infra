@@ -1,0 +1,16 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/adribalbvena/bank-app-infra
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 8080
+
+# env variables for the App
+env:
+  REDIS_ADDR: "redis-master:6379"
+  REDIS_PASSWORD: "password-temporal-inseguro"
