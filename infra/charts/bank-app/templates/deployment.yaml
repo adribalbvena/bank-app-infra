@@ -16,10 +16,10 @@ spec:
       annotations:
         vault.hashicorp.com/agent-inject: "true"
         vault.hashicorp.com/role: "bank-app-role"
-        vault.hashicorp.com/agent-inject-secret-config: "secret/data/redis-config"
-        vault.hashicorp.com/agent-inject-template-config: |
+        vault.hashicorp.com/agent-inject-secret-redis-config: "secret/data/redis-config"
+        vault.hashicorp.com/agent-inject-template-redis-config: |
           {{ `{{- with secret "secret/data/redis-config" -}}
-          export REDIS_PASSWORD="{{ .Data.data.password }}"
+          {{ .Data.data.password }}
           {{- end -}}` }}
     spec:
       {{- with .Values.imagePullSecrets }}
