@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bank-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/adribalbvena/bank-app-infra.git
+    targetRevision: HEAD
+    path: infra/charts/bank-app
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true      # deletes resources that are no longer defined in Git
+      selfHeal: true   # if someone changes something in K8s, it reverts to Git state
+    syncOptions:
+      - CreateNamespace=true
