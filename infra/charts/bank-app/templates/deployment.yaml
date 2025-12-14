@@ -18,9 +18,9 @@ spec:
         vault.hashicorp.com/role: "bank-app-role"
         vault.hashicorp.com/agent-inject-secret-config: "secret/data/redis-config"
         vault.hashicorp.com/agent-inject-template-config: |
-          {{- with secret "secret/data/redis-config" -}}
+          {{ `{{- with secret "secret/data/redis-config" -}}
           export REDIS_PASSWORD="{{ .Data.data.password }}"
-          {{- end -}}
+          {{- end -}}` }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
