@@ -31,9 +31,6 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["/bin/sh", "-c"]
-          args: ["source /vault/secrets/config && /app/server"] 
-          
           env:
             - name: REDIS_ADDR
               value: {{ .Values.env.REDIS_ADDR | quote }}
