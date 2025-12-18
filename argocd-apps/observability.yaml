@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: observability
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    chart: kube-prometheus-stack
+    repoURL: https://prometheus-community.github.io/helm-charts
+    targetRevision: 61.3.2  
+    helm:
+      parameters:
+        - name: grafana.adminPassword
+          value: "admin123"
+        - name: prometheus.prometheusSpec.resources.requests.memory
+          value: "400Mi"
+        - name: prometheus.prometheusSpec.resources.requests.cpu
+          value: "200m"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
